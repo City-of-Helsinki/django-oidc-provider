@@ -142,11 +142,13 @@ class AuthorizeView(View):
                 if 'none' in authorize.params['prompt']:
                     raise AuthorizeError(
                         authorize.params['redirect_uri'], 'login_required', authorize.grant_type)
-                if 'login' in authorize.params['prompt']:
-                    next_page = strip_prompt_login(request.get_full_path())
-                    return redirect_to_login(next_page, settings.get('OIDC_LOGIN_URL'))
 
-                return redirect_to_login(request.get_full_path(), settings.get('OIDC_LOGIN_URL'))
+                next_page = request.get_full_path()
+
+                if 'login' in authorize.params['prompt']:
+                    next_page = strip_prompt_login(next_page)
+
+                return redirect_to_login(next_page, settings.get('OIDC_LOGIN_URL'))
 
         except (ClientIdError, RedirectUriError) as error:
             context = {
