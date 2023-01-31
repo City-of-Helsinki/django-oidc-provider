@@ -11,6 +11,7 @@ except ImportError:
     from urllib.parse import urlsplit, parse_qs, urlunsplit, urlencode
 from uuid import uuid4
 
+from django.contrib.auth.views import redirect_to_login
 from django.utils import timezone
 
 from oidc_provider.lib.claims import StandardScopeClaims
@@ -304,3 +305,6 @@ class AuthorizeEndpoint(object):
             scopes_extra = []
 
         return scopes + scopes_extra
+
+    def redirect_to_login(self, next_url, login_url):
+        return redirect_to_login(next_url, login_url)

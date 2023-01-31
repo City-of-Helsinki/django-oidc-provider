@@ -10,10 +10,7 @@ except ImportError:
     from urllib.parse import urlsplit, parse_qs, urlunsplit, urlencode
 
 from Cryptodome.PublicKey import RSA
-from django.contrib.auth.views import (
-    redirect_to_login,
-    LogoutView,
-)
+from django.contrib.auth.views import LogoutView
 try:
     from django.urls import reverse
 except ImportError:
@@ -86,7 +83,8 @@ class AuthorizeView(View):
                     else:
                         django_user_logout(request)
                         next_page = strip_prompt_login(request.get_full_path())
-                        return redirect_to_login(next_page, settings.get('OIDC_LOGIN_URL'))
+                        return authorize.redirect_to_login(
+                            next_page, settings.get('OIDC_LOGIN_URL'))
 
                 if 'select_account' in authorize.params['prompt']:
                     # TODO: see how we can support multiple accounts for the end-user.
@@ -96,7 +94,7 @@ class AuthorizeView(View):
                             authorize.grant_type)
                     else:
                         django_user_logout(request)
-                        return redirect_to_login(
+                        return authorize.redirect_to_login(
                             request.get_full_path(), settings.get('OIDC_LOGIN_URL'))
 
                 if {'none', 'consent'}.issubset(authorize.params['prompt']):
@@ -148,7 +146,7 @@ class AuthorizeView(View):
                 if 'login' in authorize.params['prompt']:
                     next_page = strip_prompt_login(next_page)
 
-                return redirect_to_login(next_page, settings.get('OIDC_LOGIN_URL'))
+                return authorize.redirect_to_login(next_page, settings.get('OIDC_LOGIN_URL'))
 
         except (ClientIdError, RedirectUriError) as error:
             context = {
