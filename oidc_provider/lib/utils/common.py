@@ -1,7 +1,8 @@
 from hashlib import sha224
 
 import django
-from django.http import HttpResponse
+from django.core.exceptions import DisallowedRedirect
+from django.http import HttpResponseRedirect
 from django.utils.cache import patch_vary_headers
 
 from oidc_provider import settings
@@ -13,13 +14,19 @@ else:
     from django.core.urlresolvers import reverse
 
 
+class OIDCHttpResponseRedirect(HttpResponseRedirect):
+    """
+    Custom Response class for redirecting to a Non-HTTP url scheme.
+    """
+    def __init__(self, redirect_to, *args, **kwargs):
+        try:
+            super().__init__(redirect_to, *args, **kwargs)
+        except DisallowedRedirect:
+            pass
+
+
 def redirect(uri):
-    """
-    Custom Response object for redirecting to a Non-HTTP url scheme.
-    """
-    response = HttpResponse('', status=302)
-    response['Location'] = uri
-    return response
+    return OIDCHttpResponseRedirect(uri)
 
 
 def get_site_url(site_url=None, request=None):
